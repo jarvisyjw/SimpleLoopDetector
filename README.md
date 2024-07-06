@@ -1,6 +1,17 @@
 DBoW2
 =====
 
+## Installation
+
+```shell
+mkdir -p build && cd build
+cmake .. # tested with cmake 3.22.1 and gcc/cc 11.4.0 on Ubuntu
+make # tested with GNU Make 4.3
+sudo make install
+```
+
+## About
+
 DBoW2 is an improved version of the DBow library, an open source C++ library for indexing and converting images into a bag-of-word representation. It implements a hierarchical tree for approximating nearest neighbours in the image feature space and creating a visual vocabulary. DBoW2 also implements an image database with inverted and direct files to index images and enabling quick queries and feature comparisons. The main differences with the previous DBow library are:
 
   * DBoW2 classes are templated, so it can work with any type of descriptor.
