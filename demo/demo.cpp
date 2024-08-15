@@ -47,7 +47,7 @@ void wait()
 int main()
 {
   vector<vector<cv::Mat > > features;
-  loadFeatures(features);
+  loadFeatures(features); // load features of images, with NIMAGES * len(features) matrix
 
   testVocCreation(features);
 
@@ -61,7 +61,9 @@ int main()
 // ----------------------------------------------------------------------------
 
 void loadFeatures(vector<vector<cv::Mat > > &features)
+// Extract ORB features and save them in a vector of cv::Mat
 {
+
   features.clear();
   features.reserve(NIMAGES);
 
@@ -81,7 +83,7 @@ void loadFeatures(vector<vector<cv::Mat > > &features)
     orb->detectAndCompute(image, mask, keypoints, descriptors);
 
     features.push_back(vector<cv::Mat >());
-    changeStructure(descriptors, features.back());
+    changeStructure(descriptors, features.back()); // change the size of features to NIMAGES x len(decriptors)
   }
 }
 
