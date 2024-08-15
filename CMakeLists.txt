@@ -30,7 +30,7 @@ set(SRCS
 set(DEPENDENCY_DIR ${CMAKE_CURRENT_BINARY_DIR}/dependencies)
 set(DEPENDENCY_INSTALL_DIR ${DEPENDENCY_DIR}/install)
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 4.4 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 if(BUILD_DBoW2)
@@ -53,6 +53,7 @@ endif(BUILD_Demo)
 
 if(BUILD_Retrieval)
   add_executable(retrieval Retrieval/test_retrieval.cpp)
+  target_include_directories(${PROJECT_NAME} PUBLIC Retrieval/)
   target_link_libraries(retrieval ${PROJECT_NAME} ${OpenCV_LIBS})
   set_target_properties(retrieval PROPERTIES CXX_STANDARD 11)
   file(COPY demo/images DESTINATION ${CMAKE_BINARY_DIR}/)
