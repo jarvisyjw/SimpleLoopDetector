@@ -54,7 +54,7 @@ class Retrieval {       // The class
 
   public:             // Access specifier
 
-    Retrieval(const std::string vocab_path, const int rad) : rad(rad){
+    Retrieval(const std::string vocab_path, const int rad) : rad(rad) {
 
       std::cout << "Loading the vocabulary " << vocab_path << std::endl;
 
@@ -70,7 +70,7 @@ class Retrieval {       // The class
 
     }
 
-    void load_from_file(const std::string file_path, const std::string image_path){
+    void load_images_from_file(const std::string file_path, const std::string image_path){
       std::ifstream file(file_path);
       if (!file.is_open()) {
           std::cerr << "Error opening file: " << file_path << std::endl;
@@ -237,6 +237,9 @@ class Retrieval {       // The class
 
       // return output;
     // }
+    int get_num_images() const {
+      return static_cast<int>(features.size());
+    }
 
     std::tuple<float, int, double, double> query(const int i) const {
 
@@ -266,9 +269,6 @@ class Retrieval {       // The class
     }
 };
 
-
-const int NIMAGES = 4;
-
 int main(int argc, char **argv)
 {
   std::string vocab_path = "ORBvoc.txt";
@@ -284,17 +284,13 @@ int main(int argc, char **argv)
 
   // std::cout << "Loading the vocabulary " << vocab_path << std::endl;
 
-  Retrieval LoopDetector(vocab_path, 1);
+  Retrieval LoopDetector(vocab_path, 1); // search radius = 1
 
-  LoopDetector.load_from_file(file_name, image_path);
+  LoopDetector.load_images_from_file(file_name, image_path);
 
+  int NIMAGES = LoopDetector.get_num_images();
 
-  // for(int i = 0; i < NIMAGES; ++i)
-  // {
-  //   std::stringstream ss;
-  //   ss << image_path <<"image" << i << ".png";
-  //   LoopDetector.insert_image(cv::imread(ss.str(), 0));
-  // }
+  std::cout << "Number of images: " << NIMAGES << std::endl;
 
     for(int i = 0; i < NIMAGES; ++i)
     { 
