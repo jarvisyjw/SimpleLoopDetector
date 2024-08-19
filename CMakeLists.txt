@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(DBoW2)
+project(SimpleLoopDetector)
 include(ExternalProject)
 
 option(BUILD_DBoW2   "Build DBoW2"            ON)
@@ -32,6 +32,11 @@ set(DEPENDENCY_INSTALL_DIR ${DEPENDENCY_DIR}/install)
 
 find_package(OpenCV 4.4 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
+find_package(yaml-cpp REQUIRED)
+include_directories(${YAML_INCLUDE_DIRS})
+target_link_libraries(${YAML_CPP_LIBRARIES})
+
+# print the yaml-cpp directory
 
 if(BUILD_DBoW2)
   set(LIB_SHARED "SHARED")
@@ -53,8 +58,8 @@ endif(BUILD_Demo)
 
 if(BUILD_Retrieval)
   add_executable(retrieval Retrieval/test_retrieval.cpp)
-  target_include_directories(${PROJECT_NAME} PUBLIC Retrieval/)
-  target_link_libraries(retrieval ${PROJECT_NAME} ${OpenCV_LIBS})
+  target_include_directories(${PROJECT_NAME} PUBLIC Retrieval/ ${YAML_INCLUDE_DIRS})
+  target_link_libraries(retrieval ${PROJECT_NAME} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
   set_target_properties(retrieval PROPERTIES CXX_STANDARD 11)
   file(COPY demo/images DESTINATION ${CMAKE_BINARY_DIR}/)
   file(COPY Vocabulary/ DESTINATION ${CMAKE_BINARY_DIR}/)

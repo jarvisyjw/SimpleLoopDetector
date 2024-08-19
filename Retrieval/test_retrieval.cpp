@@ -242,6 +242,14 @@ class Retrieval {       // The class
     }
 
     std::tuple<float, int, double, double> query(const int i) const {
+      '''
+      Returns
+      A tuple of
+        (float) similarity score, 
+        (int) index of the matching image, 
+        (double) number of matches, 
+        (double) number of inliers
+      '''
 
       if ((i >= static_cast<int>(features.size())) || (i < 0))
         throw std::invalid_argument( "index invalid" );
@@ -271,18 +279,12 @@ class Retrieval {       // The class
 
 int main(int argc, char **argv)
 {
-  std::string vocab_path = "ORBvoc.txt";
-  std::string image_path = "images/";
-  std::string file_name = "timestamp_kf.txt";
+  std::string config_file = "config/config.yaml";
 
-  if (argc > 1)
-    vocab_path = argv[1];
-  if (argc > 2)
-    image_path = argv[2];
-  if (argc > 3)
-    file_name = argv[3];
+  if (argc > 1) config_file = argv[1];
+  if (argc > 2) std::cout << "Usage: " << argv[0] << " [config_file]" << std::endl;
 
-  // std::cout << "Loading the vocabulary " << vocab_path << std::endl;
+  parser(config_file);
 
   Retrieval LoopDetector(vocab_path, 1); // search radius = 1
 
@@ -296,6 +298,8 @@ int main(int argc, char **argv)
     { 
       std::cout << "Start Retrieval." << std::endl;
         auto output = LoopDetector.query(i);
+        output_to_file(output_path, output);
+
         std::cout << "Searching for Image " << i << " Score: " << std::get<0>(output) 
         << " Index: " << std::get<1>(output) << " Num Matches: " << std::get<2>(output)
         << "Inliers after GV" << std::get<3>(output) << std::endl;

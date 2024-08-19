@@ -1,0 +1,4 @@
+vocab_path: “/Users/yujingwen/Workspace/SimpleLoopDetector/Vocabulary/ORBvoc.txt”
+image_path: “data/unitysim_00/images”
+file_name: “data/unitysim_00/timestamp_kf.txt”
+output_path: “data/unitysim_00/DBow2loop.txt”

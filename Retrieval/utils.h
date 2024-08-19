@@ -3,57 +3,41 @@
 #include <thread>
 #include <fstream>
 #include <string>
+#include <yaml-cpp/yaml.h>
+#include <stdexcept>
 
-// parse the arguments from a ymal file, contains std::string vocab_path = "ORBvoc.txt"; std::string image_path = "images/"; std::string file_name = "timestamp_kf.txt";
-// set the vocab_path, image_path, file_name as global variables
-// do not use opencv
-void parser(const std::string &config_file, std::string &vocab_path, std::string &image_path, std::string &file_name){
-    std::ifstream file(config_file);
-    if (!file.is_open()) {
-        std::cerr << "Could not open the file: " << config_file << std::endl;
-        throw std::invalid_argument( "invalid file path" );
-    }
+// Global variables
+std::string vocab_path = "ORBvoc.txt";
+std::string image_path = "images/";
+std::string file_name = "timestamp_kf.txt";
+std::string output_path = "DBoW.txt";
 
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.find("vocab_path") != std::string::npos) {
-            vocab_path = line.substr(line.find("=") + 1);
-        } else if (line.find("image_path") != std::string::npos) {
-            image_path = line.substr(line.find("=") + 1);
-        } else if (line.find("file_name") != std::string::npos) {
-            file_name = line.substr(line.find("=") + 1);
+
+// Parse the arguments from a ymal file
+void parser(const std::string &config_file) {
+    try {
+        YAML::Node config = YAML::LoadFile(config_file);
+        
+        if (!config["vocab_path"] || !config["image_path"] || !config["file_name"]) {
+            throw std::runtime_error("Missing required fields in YAML file");
         }
+
+        vocab_path = config["vocab_path"].as<std::string>();
+        image_path = config["image_path"].as<std::string>();
+        file_name = config["file_name"].as<std::string>();
+        output_path = config["output_path"].as<std::string>();
+
+        std::cout << "Parsed arguments from YAML file: " << config_file << std::endl;
+        std::cout << "vocab_path: " << vocab_path << std::endl;
+        std::cout << "image_path: " << image_path << std::endl;
+        std::cout << "file_name: " << file_name << std::endl;
+        std::cout << "output_path: " << output_path << std::endl;
+
+    } catch (const YAML::Exception &e) {
+        std::cerr << "Error parsing YAML file: " << e.what() << std::endl;
+        throw std::invalid_argument("invalid file path or content");
     }
-
-    file.close();
 }
-
-void parser(const std::string &config_file, std::string &vocab_path, std::string &image_path, std::string &file_name){
-    cv::FileStorage fs(config_file, cv::FileStorage::READ);
-    if (!fs.isOpened()){
-        std::cerr << "Error opening file: " << config_file << std::endl;
-        throw std::invalid_argument( "invalid file path" );
-    }
-    fs["vocab_path"] >> vocab_path;
-    fs["image_path"] >> image_path;
-    fs["file_name"] >> file_name;
-    fs.release();
-}
-
-
-void parse_args(const std::string &config_file, std::string &vocab_path, std::string &image_path, std::string &file_name){
-  cv::FileStorage fs(config_file, cv::FileStorage::READ);
-  if (!fs.isOpened()){
-    std::cerr << "Error opening file: " << config_file << std::endl;
-    throw std::invalid_argument( "invalid file path" );
-  }
-  fs["vocab_path"] >> vocab_path;
-  fs["image_path"] >> image_path;
-  fs["file_name"] >> file_name;
-  fs.release();
-}
-
-
 
 int countLinesInFile(const std::string& filename) {
     std::ifstream file(filename);
@@ -71,7 +55,6 @@ int countLinesInFile(const std::string& filename) {
     file.close();
     return lineCount;
 }
-
 
 void showProgressBar(int progress, int total) {
     int barWidth = 50;
@@ -93,7 +76,7 @@ void showProgressBar(int progress, int total) {
 }
 
 // A function for output the similarity score to a txt file
-void output_to_file(const std::string file_path, const std::vector<std::tuple<int, int, double>> &output){
+void output_to_file(const std::string file_path, std::tuple<float, int, double, double> &output){
   std::ofstream file(file_path);
   if (!file.is_open()) {
       std::cerr << "Error opening file: " << file_path << std::endl;
