@@ -5,6 +5,7 @@ Thanks for their amazing works!
 
 ## Dependences
 - OpenCV (Tested with 4.4.0)
+- yaml-cpp ([Installation Guide](https://github.com/jbeder/yaml-cpp))
 
 ## Installation
 
@@ -12,24 +13,25 @@ Thanks for their amazing works!
 mkdir -p build && cd build
 cmake .. # tested with cmake 3.22.1 and gcc/cc 11.4.0 on Ubuntu
 make # tested with GNU Make 4.3
-sudo make install
+# sudo make install
 ```
 
 ## Usage
 ### Working Pipeline
 1. Load a trained ORB vocabulary used in [ORB-SLAM3](https://github.com/UZ-SLAMLab/ORB_SLAM3).
 2. Load a sequence of Image and compute their ORB features.
-3. Retrieval by BoW.
+3. Retrieval by DBoW2.
 
 ### Run
 ```bash
 cd build
-./retrieval /path/to/ORBvoc.txt /path/to/image/root /path/to/image_name_file
+./retrieval /path/to/config/file.yaml
 ```
 
 ## Todo
-- [ ] Use yml config for arguement parsing
-- [ ] Output the retireval results to file
+- [x] Use yml config for arguement parsing
+- [x] Output the retireval results to file
+- [ ] Plot PR-Curve
 - [ ] Pybind
 
 

@@ -1,4 +1,4 @@
-vocab_path: “/Users/yujingwen/Workspace/SimpleLoopDetector/Vocabulary/ORBvoc.txt”
-image_path: “data/unitysim_00/images”
-file_name: “data/unitysim_00/timestamp_kf.txt”
-output_path: “data/unitysim_00/DBow2loop.txt”
+vocab_path: /home/jarvis/jw_ws/Verification_ws/SwitchLoop/DBoW2/Vocabulary/ORBvoc.txt
+image_path: /home/jarvis/jw_ws/Verification_ws/SwitchLoop/data/unitysim/unitysim_00/images
+file_name: /home/jarvis/jw_ws/Verification_ws/SwitchLoop/data/unitysim/unitysim_00/timestamp_kf.txt
+output_path: /home/jarvis/jw_ws/Verification_ws/SwitchLoop/data/unitysim/unitysim_00/DBow2loop.txt

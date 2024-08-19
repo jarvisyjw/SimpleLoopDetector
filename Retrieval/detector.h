@@ -1,3 +1,10 @@
+#include <iostream>
+#include <chrono>
+#include <thread>
+#include <fstream>
+#include <string>
+#include <yaml-cpp/yaml.h>
+#include <stdexcept>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/features2d.hpp>
@@ -9,17 +16,82 @@
 #include <thread>
 #include <tuple>
 #include "DBoW2.h" // defines OrbVocabulary and OrbDatabase
-#include "utils.h"
+
+// Global variables
+std::string vocab_path = "ORBvoc.txt";
+std::string image_path = "images/";
+std::string file_name = "timestamp_kf.txt";
+std::string output_path = "DBoW.txt";
+std::ios_base::openmode write_mode = std::ios::out;
+bool first_write = true;    // Flag for the first write to the file
+typedef std::tuple<double,double> Match;
 
 using namespace DBoW2;
 
-// struct Image
-// {
-//   std::string timestamp;
-//   std::string filename;
-//   // cv::Mat image;
-// };
+// Count the number of lines in a file
+int countLinesInFile(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Could not open the file: " << filename << std::endl;
+        return -1;
+    }
 
+    int lineCount = 0;
+    std::string line;
+    while (std::getline(file, line)) {
+        ++lineCount;
+    }
+
+    file.close();
+    return lineCount;
+}
+
+// A function for showing the progress bar
+void showProgressBar(int progress, int total) {
+    int barWidth = 50;
+    float progressRatio = static_cast<float>(progress) / total;
+
+    std::cout << "[";
+    int pos = barWidth * progressRatio;
+    for (int i = 0; i < barWidth; ++i) {
+        if (i < pos) {
+            std::cout << "=";
+        } else if (i == pos) {
+            std::cout << ">";
+        } else {
+            std::cout << " ";
+        }
+    }
+    std::cout << "] " << int(progressRatio * 100.0) << " %\r";
+    std::cout.flush();
+}
+
+// A function for output the similarity score to a txt file
+void output_to_file(const std::string file_path, std::tuple<int, int, float, double, double> &output){
+  
+  // Check if the first time open the file
+  // If yes, open the file with write mode (clean the existing content)
+  // If no, open the file with append mode
+    if (first_write) {
+        write_mode = std::ios::out;
+        first_write = false;
+    } else {
+        write_mode = std::ios::app;
+    }
+  
+    std::ofstream file(file_path, write_mode);
+    
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << file_path << std::endl;
+        throw std::invalid_argument( "invalid file path" );
+    }
+
+    file << std::get<0>(output) << " " << std::get<1>(output) << " " << std::get<2>(output) << " "
+    << std::get<3>(output) << " " << std::get<4>(output) << std::endl;
+    
+    file.close();
+    // std::cout << "Output to file: " << file_path << std::endl;
+}
 
 void changeStructure(const cv::Mat &plain, std::vector<cv::Mat> &out)
 {
@@ -28,20 +100,6 @@ void changeStructure(const cv::Mat &plain, std::vector<cv::Mat> &out)
   for(int i = 0; i < plain.rows; ++i)
     out[i] = plain.row(i);
 }
-
-// void estimateAffine3D(const py::array_t<uint8_t> &pointsA, const py::array_t<uint8_t> &pointsB){
-
-//         const py::buffer_info buf = pointsA.request();
-//         const cv::Mat lpts(buf.shape[0], 3, CV_64F, (double *)buf.ptr);
-//         std::cout << lpts << std::endl;
-//         // const cv::Mat image(buf.shape[0], buf.shape[1], CV_64F, (unsigned char*)buf.ptr);
-
-// }
-
-// typedef std::vector<std::tuple<double, double, double, double, double>> MatchList;
-// typedef std::vector<std::tuple<double,double>> MatchList;
-typedef std::tuple<int, int> NumMatch;
-
 
 class Retrieval {       // The class
   private:
@@ -71,31 +129,29 @@ class Retrieval {       // The class
     }
 
     void load_images_from_file(const std::string file_path, const std::string image_path){
-      std::ifstream file(file_path);
-      if (!file.is_open()) {
-          std::cerr << "Error opening file: " << file_path << std::endl;
-          throw std::invalid_argument( "invalid file path" );
-      }
-      std::string line;
-      int i = 0;
-      int total_lines = countLinesInFile(file_path);
-      while (std::getline(file, line)) {
-          showProgressBar(i, total_lines);
-          std::istringstream iss(line);
-          std::string timestamp, filename;
-          // Read the timestamp and filename from the line
-          if (!(iss >> timestamp >> filename)) {
-              std::cerr << "Error parsing line: " << line << std::endl;
-              continue;  // Skip to the next line if there's an error
-          }
-          std::stringstream ss;
-          ss << image_path <<'/'<< filename;
-          // std::cout << "Loading image: " << ss.str() << std::endl;
-          insert_image(cv::imread(ss.str(), 0));
-          i++;
-          }
-          file.close();
-          std::cout << "Loaded " << i << " images from file: " << file_path << std::endl;
+        std::ifstream file(file_path);
+        if (!file.is_open()) {
+            std::cerr << "Error opening file: " << file_path << std::endl;
+            throw std::invalid_argument( "invalid file path" );
+        }
+        std::string line;
+        int i = 0;
+        int total_lines = countLinesInFile(file_path);
+        while (std::getline(file, line)) {
+            showProgressBar(i, total_lines);
+            std::istringstream iss(line);
+            std::string timestamp, filename;
+            // Read the timestamp and filename from the line
+            if (!(iss >> timestamp >> filename)) {
+                std::cerr << "Error parsing line: " << line << std::endl;
+                continue;  // Skip to the next line if there's an error
+            }
+            std::stringstream ss;
+            ss << image_path <<'/'<< filename;
+            insert_image(cv::imread(ss.str(), 0));
+            i++;
+            }
+            file.close();
       };
 
 
@@ -126,7 +182,7 @@ class Retrieval {       // The class
     
     }
 
-    std::tuple<double,double> match_pair(const int r, const int q) const {
+    Match match_pair(const int r, const int q) const {
 
       cv::BFMatcher matcher(cv::NORM_HAMMING, true);  // true = cross check
       cv::Mat ref_descs = descs.at(r);
@@ -134,19 +190,7 @@ class Retrieval {       // The class
 
       std::vector<std::vector<cv::DMatch>> knn_matches;
       matcher.knnMatch(ref_descs, query_descs, knn_matches, 1);  // k = 2 for ratio test and set cross check to false
-      // std::cout << "Number of matches: " << knn_matches.size() << std::endl;
-      // const float ratio_thresh = 0.75f;  // Recommended by Lowe in the SIFT paper
-      // std::vector<cv::DMatch> good_matches;
-      // for (size_t i = 0; i < knn_matches.size(); i++) {
-      //     if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance) {
-      //       good_matches.push_back(knn_matches[i][0]);
-      //     }
-      // }
-      // return good_matches.size();
-      // num_mathces.push_back(good_matches.size());
-      std::cout << "Number of matches: " << knn_matches.size() << std::endl;
-      std::cout << "Start Geometric Verification" << std::endl;
-
+      
       // Geometric Verification
       std::vector<cv::Point2f> points1, points2;
       for (const auto& m : knn_matches)
@@ -157,19 +201,9 @@ class Retrieval {       // The class
           points2.push_back(kpts[q][m[0].trainIdx].pt);
         }
       }
-
-
-      // for (size_t i = 0; i < knn_matches.size(); i++) {
-      //     points1.push_back(kpts[r][knn_matches[i].queryIdx].pt);
-      //     points2.push_back(kpts[q][knn_matches[i].trainIdx].pt);
-      // }
-
-      std::cout << "Points1: " << points1.size() 
-      << " Points2: " << points2.size() << std::endl;
-
+    
       cv::Mat iliers;
       cv::Mat F = cv::findFundamentalMat(points1, points2, cv::FM_RANSAC, 3, 0.99, iliers);
-      std::cout << "Fundamental Matrix: " << F << std::endl;
       int num_inliers = static_cast<int>(cv::countNonZero(iliers));
       int nmatches = static_cast<int>(knn_matches.size());
       
@@ -237,38 +271,41 @@ class Retrieval {       // The class
 
       // return output;
     // }
+
     int get_num_images() const {
       return static_cast<int>(features.size());
     }
 
-    std::tuple<float, int, double, double> query(const int i) const {
-      '''
-      Returns
-      A tuple of
-        (float) similarity score, 
-        (int) index of the matching image, 
-        (double) number of matches, 
-        (double) number of inliers
-      '''
-
+    std::tuple<int, int, float, double, double> query(const int i) const {
+      /*** 
+       Returns
+       A tuple of
+         (int) Query idx,
+         (int) index of the matching image, 
+         (float) similarity score, 
+         (double) number of matches, 
+         (double) number of inliers
+      ***/ 
+      
       if ((i >= static_cast<int>(features.size())) || (i < 0))
         throw std::invalid_argument( "index invalid" );
 
       QueryResults ret;
-      db.query(features[i], ret, features.size());
-      std::cout << "Querying the database: " << std::endl;
+      db.query(features[i], ret, features.size(), features.size());
+    //   std::cout << "Querying the database: " << std::endl;
       // std::cout << "Query Results: " << ret << std::endl;
-      std::tuple<float, int, double, double> output(-1, -1, 0.0, 0.0);
+      std::tuple<int, int, float, double, double> output(0, -1, -1, 0.0, 0.0);
+      
       for (const auto &r : ret){
         int j = r.Id;
         // only forward search and avoid self matching
         if ((i-j>0) && (r.Score > std::get<0>(output)))
         {
-          std::cout << "Mathing Image " << i << " with Image " << j << std::endl;
-          std::tuple<double,double> num_matches = match_pair(i, j);
+          // std::cout << "Mathing Image " << i << " with Image " << j << std::endl;
+          Match num_matches = match_pair(i, j);
           int num_inliers = std::get<0>(num_matches);
           int nmatches = std::get<1>(num_matches);
-          output = std::make_tuple(r.Score, j, nmatches, num_inliers);
+          output = std::make_tuple(i, j, r.Score, nmatches, num_inliers);
           // NumMatch matches = match_pair(i, j);
           // output = std::make_tuple(r.Score, j, matches);
         }
@@ -277,74 +314,40 @@ class Retrieval {       // The class
     }
 };
 
-int main(int argc, char **argv)
-{
-  std::string config_file = "config/config.yaml";
+// Parse the arguments from a ymal file
+void parser(const std::string &config_file) {
+    try {
+        YAML::Node config = YAML::LoadFile(config_file);
+        if (!config["vocab_path"] || !config["image_path"] || !config["file_name"]) {
+            throw std::runtime_error("Missing required fields in YAML file");
+        }
 
-  if (argc > 1) config_file = argv[1];
-  if (argc > 2) std::cout << "Usage: " << argv[0] << " [config_file]" << std::endl;
+        vocab_path = config["vocab_path"].as<std::string>();
+        image_path = config["image_path"].as<std::string>();
+        file_name = config["file_name"].as<std::string>();
+        output_path = config["output_path"].as<std::string>();
+        std::cout << "Parsed arguments from YAML file: " << config_file << std::endl;
+        std::cout << "vocab_path: " << vocab_path << std::endl;
+        std::cout << "image_path: " << image_path << std::endl;
+        std::cout << "file_name: " << file_name << std::endl;
+        std::cout << "output_path: " << output_path << std::endl;
 
-  parser(config_file);
-
-  Retrieval LoopDetector(vocab_path, 1); // search radius = 1
-
-  LoopDetector.load_images_from_file(file_name, image_path);
-
-  int NIMAGES = LoopDetector.get_num_images();
-
-  std::cout << "Number of images: " << NIMAGES << std::endl;
-
-    for(int i = 0; i < NIMAGES; ++i)
-    { 
-      std::cout << "Start Retrieval." << std::endl;
-        auto output = LoopDetector.query(i);
-        output_to_file(output_path, output);
-
-        std::cout << "Searching for Image " << i << " Score: " << std::get<0>(output) 
-        << " Index: " << std::get<1>(output) << " Num Matches: " << std::get<2>(output)
-        << "Inliers after GV" << std::get<3>(output) << std::endl;
-        // << std::get<1>(std::get<2>(output)) << std::endl;
-        // << std::endl;
+    } catch (const YAML::Exception &e) {
+        std::cerr << "Error parsing YAML file: " << e.what() << std::endl;
+        throw std::invalid_argument("invalid file path or content");
     }
-
-    return 0;
-  // load the vocabulary from disk
-//   OrbVocabulary voc;
-//   voc.loadFromTextFile(vocab_path);
-
-//   OrbDatabase db(voc, false, 0); // false = do not use direct index
-  // (so ignore the last param)
-  // The direct index is useful if we want to retrieve the features that
-  // belong to some vocabulary node.
-  // db creates a copy of the vocabulary, we may get rid of "voc" now
-
-//   cv::Mat image = cv::imread(image_path, 0);
-
-//   cv::imshow("test", image);
-//   cv::waitKey(0);
-
-//   cv::Mat mask;
-//   std::vector<cv::KeyPoint> keypoints;
-//   cv::Mat descriptors;
-
-//   cv::Ptr<cv::ORB> orb = cv::ORB::create();
-//   orb->detectAndCompute(image, mask, keypoints, descriptors);
-
-//   std::vector<cv::Mat > feats;
-//   changeStructure(descriptors, feats);
-
-//   db.add(feats);
-
-//   // and query the database
-//   std::cout << "Querying the database: " << std::endl;
-
-//   QueryResults ret;
-//   db.query(feats, ret, 4);
-
-//   // ret[0] is always the same image in this case, because we added it to the
-//   // database. ret[1] is the second best match.
-
-//   std::cout << "Searching for Image 0. " << ret << std::endl;
-
-//   return 0;
 }
+
+
+// Usage
+// int main() {
+//     int total = 100;
+
+//     for (int i = 0; i <= total; ++i) {
+//         showProgressBar(i, total);
+//         std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Simulate work being done
+//     }
+
+//     std::cout << std::endl;
+//     return 0;
+// }

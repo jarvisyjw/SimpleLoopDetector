@@ -57,7 +57,7 @@ if(BUILD_Demo)
 endif(BUILD_Demo)
 
 if(BUILD_Retrieval)
-  add_executable(retrieval Retrieval/test_retrieval.cpp)
+  add_executable(retrieval Retrieval/main.cpp)
   target_include_directories(${PROJECT_NAME} PUBLIC Retrieval/ ${YAML_INCLUDE_DIRS})
   target_link_libraries(retrieval ${PROJECT_NAME} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
   set_target_properties(retrieval PROPERTIES CXX_STANDARD 11)
