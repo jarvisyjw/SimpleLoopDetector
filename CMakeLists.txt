@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(DBoW2)
+project(SimpleLoopDetector)
 include(ExternalProject)
 
 option(BUILD_DBoW2   "Build DBoW2"            ON)
