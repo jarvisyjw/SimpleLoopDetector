@@ -274,7 +274,7 @@ class Retrieval {       // The class
 };
 
 
-const int NIMAGES = 4;
+// const int NIMAGES = 4;
 
 int main(int argc, char **argv)
 {
@@ -294,6 +294,7 @@ int main(int argc, char **argv)
   Retrieval LoopDetector(vocab_path, 1);
 
   LoopDetector.load_from_file(file_name, image_path);
+  int NIMAGES = LoopDetector.get_feat_size();
 
 
   // for(int i = 0; i < NIMAGES; ++i)
