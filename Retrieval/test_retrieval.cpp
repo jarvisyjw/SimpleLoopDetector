@@ -264,6 +264,13 @@ class Retrieval {       // The class
       }
       return output;
     }
+
+    int get_feat_size() const {
+      std::cout << "Number of features: " << features.size() << std::endl;
+      return static_cast<int>(features.size());
+    }
+
+
 };
 
 
