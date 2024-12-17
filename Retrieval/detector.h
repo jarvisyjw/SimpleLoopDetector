@@ -16,6 +16,7 @@
 #include <thread>
 #include <tuple>
 #include "DBoW2.h" // defines OrbVocabulary and OrbDatabase
+#include "tqdm.h"
 
 // Global variables
 std::string vocab_path = "ORBvoc.txt";
@@ -48,9 +49,8 @@ int countLinesInFile(const std::string& filename) {
 
 // A function for showing the progress bar
 void showProgressBar(int progress, int total) {
-    int barWidth = 50;
+    int barWidth = 100;
     float progressRatio = static_cast<float>(progress) / total;
-
     std::cout << "[";
     int pos = barWidth * progressRatio;
     for (int i = 0; i < barWidth; ++i) {
@@ -137,8 +137,10 @@ class Retrieval {       // The class
         std::string line;
         int i = 0;
         int total_lines = countLinesInFile(file_path);
+        tqdm bar;
         while (std::getline(file, line)) {
-            showProgressBar(i, total_lines);
+            // showProgressBar(i, total_lines);
+            bar.progress(i, total_lines);
             std::istringstream iss(line);
             std::string timestamp, filename;
             // Read the timestamp and filename from the line
@@ -148,6 +150,7 @@ class Retrieval {       // The class
             }
             std::stringstream ss;
             ss << image_path <<'/'<< filename;
+            // std::cout << image_path << '/' << filename << std::endl;
             insert_image(cv::imread(ss.str(), 0));
             i++;
             }

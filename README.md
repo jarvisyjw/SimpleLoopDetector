@@ -28,10 +28,32 @@ cd build
 ./retrieval /path/to/config/file.yaml
 ```
 
+## Experiments
+
+<!-- <p align="left"> -->
+<figure>
+<center>
+<!-- <p align='center'> -->
+<img src="./assets/PR_curves_unitysim00.png" width=250>
+<figcaption> Unitysim00 </figcaption>
+</figure>
+
+<figure>
+<center>
+<img src="./assets/PR_curves_unitysim01.png" width=250>
+<figcaption> Unitysim01 </figcaption>
+</figure>
+
+<!-- </p> -->
+
+
+
+
 ## Todo
 - [x] Use yml config for arguement parsing
 - [x] Output the retireval results to file
-- [ ] Plot PR-Curve
+- [x] Plot PR-Curve
+- [ ] Sequential Verification as described in TRO paper.
 - [ ] Pybind
 
 

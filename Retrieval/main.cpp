@@ -1,4 +1,5 @@
 #include "detector.h"
+#include "tqdm.h"
 
 // using namespace DBoW2;
 
@@ -293,57 +294,21 @@ int main(int argc, char **argv)
 
   std::cout << "Number of images: " << NIMAGES << std::endl;
 
-    for(int i = 0; i < NIMAGES; ++i)
-    { 
-      // std::cout << "Start Retrieval." << std::endl;
-      showProgressBar(i, NIMAGES);
-        auto output = LoopDetector.query(i);
-        output_to_file(output_path, output);
+  tqdm bar;
+  for(int i = 0; i < NIMAGES; ++i)
+  { 
+    // std::cout << "Start Retrieval." << std::endl;
+      // showProgressBar(i, NIMAGES);
+      bar.progress(i,NIMAGES);
+      auto output = LoopDetector.query(i);
+      output_to_file(output_path, output);
 
-        // std::cout << "Searching for Image " << std::get<0>(output) << " Reference: " << std::get<1>(output) 
-        // <<" Score: " << std::get<2>(output) << " Num Matches: " << std::get<3>(output) << " Inliers: " << std::get<4>(output) << std::endl; 
-        // << std::get<1>(std::get<2>(output)) << std::endl;
-        // << std::endl;
-    }
+      // std::cout << "Searching for Image " << std::get<0>(output) << " Reference: " << std::get<1>(output) 
+      // <<" Score: " << std::get<2>(output) << " Num Matches: " << std::get<3>(output) << " Inliers: " << std::get<4>(output) << std::endl; 
+      // << std::get<1>(std::get<2>(output)) << std::endl;
+      // << std::endl;
+  }
+  bar.finish();
 
     return 0;
-  // load the vocabulary from disk
-//   OrbVocabulary voc;
-//   voc.loadFromTextFile(vocab_path);
-
-//   OrbDatabase db(voc, false, 0); // false = do not use direct index
-  // (so ignore the last param)
-  // The direct index is useful if we want to retrieve the features that
-  // belong to some vocabulary node.
-  // db creates a copy of the vocabulary, we may get rid of "voc" now
-
-//   cv::Mat image = cv::imread(image_path, 0);
-
-//   cv::imshow("test", image);
-//   cv::waitKey(0);
-
-//   cv::Mat mask;
-//   std::vector<cv::KeyPoint> keypoints;
-//   cv::Mat descriptors;
-
-//   cv::Ptr<cv::ORB> orb = cv::ORB::create();
-//   orb->detectAndCompute(image, mask, keypoints, descriptors);
-
-//   std::vector<cv::Mat > feats;
-//   changeStructure(descriptors, feats);
-
-//   db.add(feats);
-
-//   // and query the database
-//   std::cout << "Querying the database: " << std::endl;
-
-//   QueryResults ret;
-//   db.query(feats, ret, 4);
-
-//   // ret[0] is always the same image in this case, because we added it to the
-//   // database. ret[1] is the second best match.
-
-//   std::cout << "Searching for Image 0. " << ret << std::endl;
-
-//   return 0;
 }
