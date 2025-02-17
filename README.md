@@ -18,7 +18,7 @@ make # tested with GNU Make 4.3
 
 ## Usage
 ### Working Pipeline
-1. Load a trained ORB vocabulary used in [ORB-SLAM3](https://github.com/UZ-SLAMLab/ORB_SLAM3).
+1. Load a trained ORB vocabulary used in [ORB-SLAM](https://github.com/UZ-SLAMLab/ORB_SLAM3).
 2. Load a sequence of Image and compute their ORB features.
 3. Retrieval by DBoW2.
 
@@ -28,13 +28,13 @@ cd build
 ./retrieval /path/to/config/file.yaml
 ```
 
-## Experiments
+<!-- ## Experiments -->
 
 <!-- <p align="left"> -->
-<figure>
+<!-- <figure>
 <center>
 <!-- <p align='center'> -->
-<img src="./assets/PR_curves_unitysim00.png" width=250>
+<!-- <img src="./assets/PR_curves_unitysim00.png" width=250>
 <figcaption> Unitysim00 </figcaption>
 </figure>
 
@@ -42,7 +42,7 @@ cd build
 <center>
 <img src="./assets/PR_curves_unitysim01.png" width=250>
 <figcaption> Unitysim01 </figcaption>
-</figure>
+</figure> --> 
 
 <!-- </p> -->
 
@@ -52,7 +52,7 @@ cd build
 ## Todo
 - [x] Use yml config for arguement parsing
 - [x] Output the retireval results to file
-- [x] Plot PR-Curve
+<!-- - [x] Plot PR-Curve -->
 - [ ] Sequential Verification as described in TRO paper.
 - [ ] Pybind
 

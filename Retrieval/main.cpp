@@ -278,7 +278,7 @@ int main(int argc, char **argv)
 
   parser(config_file);
 
-  Retrieval LoopDetector(vocab_path, 1); // search radius = 1
+  Retrieval LoopDetector(vocab_path); // search radius = 1
 
   // std::ios_base::openmode mode = std::ios::app; // Default to append mode
 
@@ -300,7 +300,7 @@ int main(int argc, char **argv)
     // std::cout << "Start Retrieval." << std::endl;
       // showProgressBar(i, NIMAGES);
       bar.progress(i,NIMAGES);
-      auto output = LoopDetector.query(i);
+      auto output = LoopDetector.query(i, topk);
       output_to_file(output_path, output);
 
       // std::cout << "Searching for Image " << std::get<0>(output) << " Reference: " << std::get<1>(output) 

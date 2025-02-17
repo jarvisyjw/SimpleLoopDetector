@@ -23,6 +23,7 @@ std::string vocab_path = "ORBvoc.txt";
 std::string image_path = "images/";
 std::string file_name = "timestamp_kf.txt";
 std::string output_path = "DBoW.txt";
+int topk = 5;
 std::ios_base::openmode write_mode = std::ios::out;
 bool first_write = true;    // Flag for the first write to the file
 typedef std::tuple<double,double> Match;
@@ -67,7 +68,7 @@ void showProgressBar(int progress, int total) {
 }
 
 // A function for output the similarity score to a txt file
-void output_to_file(const std::string file_path, std::tuple<int, int, float, double, double> &output){
+void output_to_file(const std::string file_path, std::vector<std::tuple<int, int, float, double, double>> &output){
   
   // Check if the first time open the file
   // If yes, open the file with write mode (clean the existing content)
@@ -86,8 +87,19 @@ void output_to_file(const std::string file_path, std::tuple<int, int, float, dou
         throw std::invalid_argument( "invalid file path" );
     }
 
-    file << std::get<0>(output) << " " << std::get<1>(output) << " " << std::get<2>(output) << " "
-    << std::get<3>(output) << " " << std::get<4>(output) << std::endl;
+    for (const auto &entry : output) {
+      if (std::get<1>(entry) == -1 || std::get<1>(entry) == 0){continue;}
+      else{
+        file << std::get<0>(entry) << " " 
+             << std::get<1>(entry) << " " 
+             << std::get<2>(entry) << " "
+             << std::get<3>(entry) << " " 
+             << std::get<4>(entry) << std::endl;
+      }
+    }
+
+    // file << std::get<0>(output) << " " << std::get<1>(output) << " " << std::get<2>(output) << " "
+    // << std::get<3>(output) << " " << std::get<4>(output) << std::endl;
     
     file.close();
     // std::cout << "Output to file: " << file_path << std::endl;
@@ -108,11 +120,11 @@ class Retrieval {       // The class
     std::vector<std::vector<cv::KeyPoint > > kpts;
     // std::vector<double> num_mathces;
     OrbDatabase db;
-    const int rad; // search radius
+    // const int rad; // search radius
 
   public:             // Access specifier
 
-    Retrieval(const std::string vocab_path, const int rad) : rad(rad) {
+    Retrieval(const std::string vocab_path){
 
       std::cout << "Loading the vocabulary " << vocab_path << std::endl;
 
@@ -279,7 +291,7 @@ class Retrieval {       // The class
       return static_cast<int>(features.size());
     }
 
-    std::tuple<int, int, float, double, double> query(const int i) const {
+    std::vector<std::tuple<int, int, float, double, double>> query(const int i, const int max_result) const {
       /*** 
        Returns
        A tuple of
@@ -294,24 +306,34 @@ class Retrieval {       // The class
         throw std::invalid_argument( "index invalid" );
 
       QueryResults ret;
-      db.query(features[i], ret, features.size(), features.size());
-    //   std::cout << "Querying the database: " << std::endl;
+      // db.query(features[i], ret, features.size, features.size());
+      db.query(features[i], ret, max_result, i);
+
+      // std::cout << "Querying the database: " << std::endl;
       // std::cout << "Query Results: " << ret << std::endl;
-      std::tuple<int, int, float, double, double> output(0, -1, -1, 0.0, 0.0);
+      // std::tuple<int, int, float, double, double> output(0, -1, -1, 0.0, 0.0);
+      
+      std::vector<std::tuple<int, int, float, double, double>> output;
+      output.resize(max_result);
+      // output.push_back(std::make_tuple(0, -1, -1, 0.0, 0.0));
       
       for (const auto &r : ret){
         int j = r.Id;
+        std::tuple<int, int, float, double, double> pair_tmp(0, -1, -1, 0.0, 0.0);
         // only forward search and avoid self matching
-        if ((i-j>0) && (r.Score > std::get<0>(output)))
+        if ((i-j>0) && (r.Score > std::get<2>(pair_tmp)))
         {
           // std::cout << "Mathing Image " << i << " with Image " << j << std::endl;
           Match num_matches = match_pair(i, j);
           int num_inliers = std::get<0>(num_matches);
           int nmatches = std::get<1>(num_matches);
-          output = std::make_tuple(i, j, r.Score, nmatches, num_inliers);
+          pair_tmp = std::make_tuple(i, j, r.Score, nmatches, num_inliers);
+          output.push_back(pair_tmp);
           // NumMatch matches = match_pair(i, j);
           // output = std::make_tuple(r.Score, j, matches);
         }
+        else{
+        output.push_back(pair_tmp);}
       }
       return output;
     }
@@ -329,11 +351,13 @@ void parser(const std::string &config_file) {
         image_path = config["image_path"].as<std::string>();
         file_name = config["file_name"].as<std::string>();
         output_path = config["output_path"].as<std::string>();
+        topk = config["topk"].as<int>();
         std::cout << "Parsed arguments from YAML file: " << config_file << std::endl;
         std::cout << "vocab_path: " << vocab_path << std::endl;
         std::cout << "image_path: " << image_path << std::endl;
         std::cout << "file_name: " << file_name << std::endl;
         std::cout << "output_path: " << output_path << std::endl;
+        std::cout << "TopK: " << topk << std::endl;
 
     } catch (const YAML::Exception &e) {
         std::cerr << "Error parsing YAML file: " << e.what() << std::endl;

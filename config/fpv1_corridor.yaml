@@ -1,0 +1,5 @@
+vocab_path: /home/jarvis/jw_ws/Verification_ws/SwitchLoop/DBoW2/Vocabulary/ORBvoc.txt
+image_path: /mnt/JWDATA2/dataset/FusionPortable/FusionPortable_dataset_release/sensor_data/handheld/20220216_corridor_day/images
+file_name: /mnt/JWDATA2/dataset/FusionPortable/FusionPortable_dataset_release/sensor_data/handheld/20220216_corridor_day/frames.txt
+topk: 5
+output_path: /mnt/JWDATA2/dataset/FusionPortable/FusionPortable_dataset_release/sensor_data/handheld/20220216_corridor_day/DBow2loop_top5.txt
