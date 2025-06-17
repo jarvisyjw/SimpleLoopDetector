@@ -1,0 +1,4 @@
+vocab_path: /home/jarvis/jw_ws/Verification_ws/SwitchLoop/DBoW2/Vocabulary/ORBvoc.txt
+image_path: /mnt/jw_ssd/jw_ws/Verification_ws/GV-Bench/dataset/images
+pairs_path: /home/jarvis/jw_ws/Verification_ws/GV-Bench/dataset/gt/cross_floor.txt
+scores_path: /home/jarvis/jw_ws/vpr_ws/SimpleLoopDetector/output/cross_floor_scores.txt

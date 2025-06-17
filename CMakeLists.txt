@@ -5,6 +5,8 @@ include(ExternalProject)
 option(BUILD_DBoW2   "Build DBoW2"            ON)
 option(BUILD_Demo    "Build demo application" ON)
 option(BUILD_Retrieval    "Build LoopDetector application" ON)
+option(BUILD_ScorePair          "Build ScorePair" ON)
+
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
@@ -64,6 +66,16 @@ if(BUILD_Retrieval)
   file(COPY demo/images DESTINATION ${CMAKE_BINARY_DIR}/)
   file(COPY Vocabulary/ DESTINATION ${CMAKE_BINARY_DIR}/)
 endif(BUILD_Retrieval)
+
+if(BUILD_ScorePair)
+  add_executable(score_pair Retrieval/score_pair.cpp)
+  target_include_directories(${PROJECT_NAME} PUBLIC Retrieval/ ${YAML_INCLUDE_DIRS})
+  target_link_libraries(score_pair ${PROJECT_NAME} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
+  set_target_properties(score_pair PROPERTIES CXX_STANDARD 11)
+  # file(COPY demo/images DESTINATION ${CMAKE_BINARY_DIR}/)
+  # file(COPY Vocabulary/ DESTINATION ${CMAKE_BINARY_DIR}/)
+endif(BUILD_ScorePair)
+
 
 configure_file(src/DBoW2.cmake.in
   "${PROJECT_BINARY_DIR}/DBoW2Config.cmake" @ONLY)
